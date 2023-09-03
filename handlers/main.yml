@@ -4,3 +4,10 @@
     name: "{{ postgresql_daemon }}"
     state: "{{ postgresql_restarted_state }}"
     sleep: 5
+  when: INVOCATION_ID is defined
+
+- name: restart postgresql (when NOT booted with systemd)
+  command: "{{ postgresql_bin_path }}/pg_ctl -D {{ postgresql_data_dir }} stop && {{ postgresql_bin_path }}/pg_ctl -D {{ postgresql_data_dir }} start" 
+  become: true
+  become_user: postgres
+  when: INVOCATION_ID is undefined
