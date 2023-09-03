@@ -15,11 +15,30 @@
 - include_tasks: initialize.yml
 - include_tasks: configure.yml
 
+#
+# When using this role with ansible-bender, despite the podman
+# container's service_mgr being 'systemd', the ansible service
+# module's invocation of systemctl fails due to the system having NOT
+# been booted with systemd.  This INVOCATION_ID variable, set by
+# systemd (say, in your login session, and presumably in a localhost
+# application of this role), is undefined in a running podman
+# container.  If you know a better way of detecting systemd boot, as
+# used in the next two rules, please let me know at
+# jm@symbolic-simulation.com
+#
+
 - name: Ensure PostgreSQL is started and enabled on boot.
   service:
     name: "{{ postgresql_daemon }}"
     state: "{{ postgresql_service_state }}"
     enabled: "{{ postgresql_service_enabled }}"
+  when: INVOCATION_ID is defined
+
+- name: Ensure PostgreSQL is started (when NOT booted with systemd)
+  command: "{{ postgresql_bin_path }}/pg_ctl -D {{ postgresql_data_dir }} start"
+  become: true
+  become_user: postgres
+  when: INVOCATION_ID is undefined
 
 # Configure PostgreSQL.
 - import_tasks: users.yml
