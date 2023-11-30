@@ -6,7 +6,7 @@
     sleep: 5
   when: INVOCATION_ID is defined
 
-- name: restart postgresql (when NOT booted with systemd)
+- name: restart postgresql
   command: "{{ postgresql_bin_path }}/pg_ctl -D {{ postgresql_data_dir }} stop && {{ postgresql_bin_path }}/pg_ctl -D {{ postgresql_data_dir }} start" 
   become: true
   become_user: postgres
